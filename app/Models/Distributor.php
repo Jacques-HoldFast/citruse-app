@@ -32,6 +32,20 @@ class Distributor extends Model
     }
 
     /**
+     * Get active purchase orders (POD orders from this distributor)
+     */
+    public function activePurchaseOrders(): HasMany
+    {
+        return $this->purchaseOrders()
+            ->where('type', PurchaseOrder::TYPE_DISTRIBUTOR_ORDER)
+            ->whereIn('status', [
+                PurchaseOrder::STATUS_NEW,
+                PurchaseOrder::STATUS_ACCEPTED_BY_SUPPLIER,
+                PurchaseOrder::STATUS_IN_DELIVERY
+            ]);
+    }
+
+    /**
      * Get the full contact information formatted
      */
     public function getPrimarySalesContactAttribute()
