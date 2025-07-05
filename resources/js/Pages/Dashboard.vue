@@ -189,7 +189,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 
                                 <!-- View Products -->
-                                <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <button @click="goToProducts" 
+                                        class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
                                     <div class="flex items-center space-x-3">
                                         <div class="text-2xl">🍊</div>
                                         <div>
@@ -197,11 +198,12 @@
                                             <p class="text-sm text-gray-600">Browse the citrus catalog</p>
                                         </div>
                                     </div>
-                                </div>
+                                </button>
 
                                 <!-- Manage Suppliers (if authorized) -->
-                                <div v-if="canManageSuppliers" 
-                                     class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <button v-if="canManageSuppliers" 
+                                        @click="goToSuppliers"
+                                        class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
                                     <div class="flex items-center space-x-3">
                                         <div class="text-2xl">🏢</div>
                                         <div>
@@ -209,19 +211,20 @@
                                             <p class="text-sm text-gray-600">Add and edit suppliers</p>
                                         </div>
                                     </div>
-                                </div>
+                                </button>
 
                                 <!-- Create Purchase Order (if authorized) -->
-                                <div v-if="canCreatePurchaseOrders" 
-                                     class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <button v-if="canCreatePurchaseOrders" 
+                                        @click="goToOrders"
+                                        class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
                                     <div class="flex items-center space-x-3">
                                         <div class="text-2xl">📋</div>
                                         <div>
-                                            <h4 class="font-medium text-gray-900">Create Order</h4>
-                                            <p class="text-sm text-gray-600">New purchase order</p>
+                                            <h4 class="font-medium text-gray-900">Purchase Orders</h4>
+                                            <p class="text-sm text-gray-600">View and manage orders</p>
                                         </div>
                                     </div>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -247,7 +250,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { Head, usePage } from '@inertiajs/vue3'
+import { Head, usePage, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useApi } from '@/Composables/useApi'
 
@@ -356,4 +359,17 @@ const loadDashboardData = async () => {
 onMounted(() => {
     loadDashboardData()
 })
+
+// Navigation methods
+const goToProducts = () => {
+    router.visit('/products')
+}
+
+const goToSuppliers = () => {
+    router.visit('/suppliers')
+}
+
+const goToOrders = () => {
+    router.visit('/purchase-orders')
+}
 </script>
