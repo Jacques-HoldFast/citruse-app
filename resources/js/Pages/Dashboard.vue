@@ -213,6 +213,19 @@
                                     </div>
                                 </button>
 
+                                <!-- Manage Distributors (if authorized) -->
+                                <button v-if="canManageSuppliers" 
+                                        @click="goToDistributors"
+                                        class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="text-2xl">🌍</div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">Manage Distributors</h4>
+                                            <p class="text-sm text-gray-600">Add and edit distributors</p>
+                                        </div>
+                                    </div>
+                                </button>
+
                                 <!-- Create Purchase Order (if authorized) -->
                                 <button v-if="canCreatePurchaseOrders" 
                                         @click="goToOrders"
@@ -371,5 +384,9 @@ const goToSuppliers = () => {
 
 const goToOrders = () => {
     router.visit('/purchase-orders')
+}
+
+const goToDistributors = () => {
+    router.visit('/distributors')
 }
 </script>
