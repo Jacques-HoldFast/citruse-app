@@ -45,7 +45,7 @@ class User extends Authenticatable
     ];
 
     // Role constants
-    const ROLE_SYSTEM_ADMIN = 'system_admin';
+    const ROLE_SYSTEM_ADMIN = 'system_administrator';  // Changed to match database
     const ROLE_PURCHASING_MANAGER = 'purchasing_manager';
     const ROLE_FIELD_SALES_ASSOCIATE = 'field_sales_associate';
 
@@ -115,5 +115,13 @@ class User extends Authenticatable
     public function getRoleDisplayName(): string
     {
         return self::getRoles()[$this->role] ?? 'Unknown';
+    }
+
+    /**
+     * Get purchase orders created by this user
+     */
+    public function purchaseOrders()
+    {
+        return $this->hasMany(\App\Models\PurchaseOrder::class, 'created_by');
     }
 }
