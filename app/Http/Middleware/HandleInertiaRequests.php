@@ -17,7 +17,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(Request $request): ?string
+    public function version(Request $request): string|null
     {
         return parent::version($request);
     }
@@ -32,7 +32,24 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role' => $request->user()->role,
+                    'role_display_name' => $request->user()->getRoleDisplayName(),
+                    'permissions' => [
+                        'can_manage_suppliers' => $request->user()->canManageSuppliers(),
+                        'can_create_purchase_orders' => $request->user()->canCreatePurchaseOrders(),
+                        'can_update_purchase_order_status' => $request->user()->canUpdatePurchaseOrderStatus(),
+                        'is_system_admin' => $request->user()->isSystemAdmin(),
+                        'is_purchasing_manager' => $request->user()->isPurchasingManager(),
+                        'is_field_sales_associate' => $request->user()->isFieldSalesAssociate(),
+                    ]
+                ] : null,
+            ],
+            'flash' => [
+                'message' => fn() => $request->session()->get('message')
             ],
         ];
     }
