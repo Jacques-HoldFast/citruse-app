@@ -14,11 +14,11 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canRegister' => false, // Public registration disabled - users created by admins only
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('welcome');
 // Add this inside the middleware('auth') group
 Route::get('/products', function () {
     return Inertia::render('Products/Index');
