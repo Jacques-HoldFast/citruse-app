@@ -78,10 +78,12 @@ Route::middleware('auth')->group(function () {
         })->name('distributors.edit');
     });
 
-    // Purchase Orders View 
+    // Purchase Orders Views 
     Route::get('/purchase-orders', function () {
         return Inertia::render('PurchaseOrders/Index');
     })->name('purchase-orders.index');
+
+
 
     Route::get('/purchase-orders/{id}', function ($id) {
         return Inertia::render('PurchaseOrders/Show', ['orderId' => $id]);
@@ -91,12 +93,17 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('PurchaseOrders/PipelineForecast');
     })->name('purchase-orders.forecast');
 
-    // Purchase Orders Create (System Admin & Purchasing Manager only)
+    // Purchase Orders  Edit / Create (System Admin & Purchasing Manager only)
     Route::middleware('role:system_administrator,purchasing_manager')->group(function () {
 
         Route::get('/purchase-orders/create', function () {
             return Inertia::render('PurchaseOrders/Create');
         })->name('purchase-orders.create');
+
+        Route::get('/purchase-orders/{id}/edit', function ($id) {
+            return Inertia::render('PurchaseOrders/Edit', ['orderId' => $id]);
+        })->name('purchase-orders.edit');
+
 
     });
 

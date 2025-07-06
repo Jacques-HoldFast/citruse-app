@@ -1,24 +1,51 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useApi } from '@/Composables/useApi';
 
 const showingNavigationDropdown = ref(false);
 const page = usePage();
+const { api } = useApi();
 
-// Get user data and permissions with safe defaults
-const user = computed(() => page.props.auth?.user || {});
+// User data from API (like your Dashboard)
+const userData = ref(null);
+
+// Get user data - try page props first, then API
+const user = computed(() => {
+    // First try API data (your current working method)
+    if (userData.value?.user) {
+        return userData.value.user;
+    }
+    
+    // Fallback to page props (standard Inertia way)
+    if (page.props.auth?.user) {
+        return page.props.auth.user;
+    }
+    
+    return {};
+});
+
 const userRole = computed(() => user.value?.role || '');
 const permissions = computed(() => user.value?.permissions || {});
 
-// Helper functions for role checking
-const canManageSuppliers = computed(() => permissions.value.can_manage_suppliers || false);
-const canCreatePurchaseOrders = computed(() => permissions.value.can_create_purchase_orders || false);
-const isSystemAdmin = computed(() => permissions.value.is_system_admin || false);
+// Helper functions for role checking (same as your Dashboard)
+const canManageSuppliers = computed(() => {
+    return user.value?.permissions?.can_manage_suppliers || false;
+});
+
+const canCreatePurchaseOrders = computed(() => {
+    return user.value?.permissions?.can_create_purchase_orders || false;
+});
+
+const isSystemAdmin = computed(() => {
+    return user.value?.permissions?.is_system_admin || false;
+});
+
 const isPurchasingManager = computed(() => userRole.value === 'purchasing_manager');
 const isFieldSalesAssociate = computed(() => userRole.value === 'field_sales_associate');
 
@@ -40,6 +67,22 @@ const roleColor = computed(() => {
         'field_sales_associate': 'bg-green-100 text-green-800'
     };
     return colors[userRole.value] || 'bg-gray-100 text-gray-800';
+});
+
+// Load user data (same pattern as your Dashboard)
+const loadUserData = async () => {
+    try {
+        const response = await api.getUser();
+        userData.value = response;
+        console.log('Layout loaded user data:', userData.value);
+    } catch (err) {
+        console.error('Error loading user data in layout:', err);
+    }
+};
+
+// Load user data on mount
+onMounted(() => {
+    loadUserData();
 });
 </script>
 
@@ -100,14 +143,14 @@ const roleColor = computed(() => {
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
                             <!-- Role Badge -->
-                            <div class="text-sm">
+                            <div v-if="user.name" class="text-sm">
                                 <span :class="roleColor" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                                     {{ roleDisplayName }}
                                 </span>
                             </div>
 
                             <!-- Quick Actions Dropdown -->
-                            <div class="relative">
+                            <div v-if="user.name" class="relative">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -156,7 +199,7 @@ const roleColor = computed(() => {
                             </div>
 
                             <!-- User Settings Dropdown -->
-                            <div class="relative ms-3">
+                            <div v-if="user.name" class="relative ms-3">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
@@ -186,6 +229,12 @@ const roleColor = computed(() => {
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
+                            </div>
+
+                            <!-- Loading indicator when user data not loaded -->
+                            <div v-else class="flex items-center text-sm text-gray-500">
+                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
+                                Loading...
                             </div>
                         </div>
 
@@ -243,7 +292,7 @@ const roleColor = computed(() => {
                         </ResponsiveNavLink>
 
                         <!-- Quick Actions Section -->
-                        <div class="pt-2 pb-1 border-t border-gray-200">
+                        <div v-if="user.name" class="pt-2 pb-1 border-t border-gray-200">
                             <div class="px-4 text-xs font-medium text-gray-500 uppercase">Quick Actions</div>
                             
                             <ResponsiveNavLink v-if="canCreatePurchaseOrders" :href="route('purchase-orders.create')">
@@ -261,7 +310,7 @@ const roleColor = computed(() => {
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div class="border-t border-gray-200 pb-1 pt-4">
+                    <div v-if="user.name" class="border-t border-gray-200 pb-1 pt-4">
                         <div class="px-4">
                             <div class="text-base font-medium text-gray-800">{{ user.name }}</div>
                             <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
