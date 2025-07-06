@@ -35,16 +35,7 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
-                <!-- Debug Section (remove after testing) -->
-                <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h4 class="font-medium text-yellow-800 mb-2">🐛 Debug Info (remove after testing)</h4>
-                    <div class="text-sm text-yellow-700 space-y-1">
-                        <div><strong>Page Props:</strong> {{ JSON.stringify(page.props, null, 2) }}</div>
-                        <div><strong>User Data:</strong> {{ JSON.stringify(userData, null, 2) }}</div>
-                        <div><strong>Computed User:</strong> {{ JSON.stringify(user, null, 2) }}</div>
-                        <div><strong>Can Create PO:</strong> {{ canCreatePO }}</div>
-                    </div>
-                </div>
+
                 
                 <!-- Search and Filters -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
