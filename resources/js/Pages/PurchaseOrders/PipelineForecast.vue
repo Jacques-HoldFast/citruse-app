@@ -245,10 +245,10 @@
                                                  class="flex justify-between items-center">
                                                 <span class="text-gray-700">{{ item.product_code }}</span>
                                                 <div class="flex items-center space-x-2">
-                                                    <span class="text-gray-600">{{ item.required_kg }}kg needed</span>
-                                                    <span class="text-green-600">{{ item.committed_kg }}kg committed</span>
-                                                    <span v-if="item.shortage_kg > 0" class="text-orange-600 font-medium">
-                                                        {{ item.shortage_kg }}kg short
+                                                    <span class="text-gray-600">{{ formatNumber(item.requested_quantity) }}kg needed</span>
+                                                    <span class="text-green-600">{{ formatNumber(item.committed_quantity) }}kg committed</span>
+                                                    <span v-if="item.shortage_quantity > 0" class="text-orange-600 font-medium">
+                                                        {{ formatNumber(item.shortage_quantity) }}kg short
                                                     </span>
                                                 </div>
                                             </div>
@@ -354,5 +354,9 @@ const formatDate = (dateString) => {
         month: 'short',
         day: 'numeric'
     })
+}
+
+const formatNumber = (value) => {
+    return new Intl.NumberFormat('en-ZA').format(value || 0)
 }
 </script>
