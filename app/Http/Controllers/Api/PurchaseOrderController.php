@@ -197,9 +197,77 @@ class PurchaseOrderController extends Controller
                 ],
                 'notes' => 'nullable|string',
                 'required_delivery_date' => 'nullable|date',
+                'items' => 'nullable|array',
+                'items.*.id' => 'nullable|exists:purchase_order_items,id',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.quantity_kg' => 'required|numeric|min:0.01',
+                'items.*.required_delivery_date' => 'required|date',
+                'items.*.unit_price_ex_vat' => 'required|numeric|min:0',
+                'items.*.total_value_ex_vat' => 'required|numeric|min:0',
             ]);
 
-            $purchaseOrder->update($validated);
+            // Build update data array - only include fields that were sent
+            $updateData = [];
+
+            if (isset($validated['status'])) {
+                $updateData['status'] = $validated['status'];
+            }
+
+            if (isset($validated['notes'])) {
+                $updateData['notes'] = $validated['notes'];
+            }
+
+            if (isset($validated['required_delivery_date'])) {
+                $updateData['required_delivery_date'] = $validated['required_delivery_date'];
+            }
+
+            // Update main purchase order fields only if we have data to update
+            if (!empty($updateData)) {
+                $purchaseOrder->update($updateData);
+            }
+
+            // Handle items if they were sent
+            if (isset($validated['items'])) {
+                // Get existing item IDs to know which ones to keep
+                $submittedItemIds = collect($validated['items'])
+                    ->filter(fn($item) => isset($item['id']))
+                    ->pluck('id')
+                    ->toArray();
+
+                // Delete items that were removed from the form
+                $purchaseOrder->items()
+                    ->whereNotIn('id', $submittedItemIds)
+                    ->delete();
+
+                // Update or create items
+                foreach ($validated['items'] as $itemData) {
+                    if (isset($itemData['id'])) {
+                        // Update existing item
+                        $item = $purchaseOrder->items()->find($itemData['id']);
+                        if ($item) {
+                            $item->update([
+                                'product_id' => $itemData['product_id'],
+                                'quantity_kg' => $itemData['quantity_kg'],
+                                'required_delivery_date' => $itemData['required_delivery_date'],
+                                'unit_price_ex_vat' => $itemData['unit_price_ex_vat'],
+                                'total_value_ex_vat' => $itemData['total_value_ex_vat'],
+                            ]);
+                        }
+                    } else {
+                        // Create new item
+                        $purchaseOrder->items()->create([
+                            'product_id' => $itemData['product_id'],
+                            'quantity_kg' => $itemData['quantity_kg'],
+                            'required_delivery_date' => $itemData['required_delivery_date'],
+                            'unit_price_ex_vat' => $itemData['unit_price_ex_vat'],
+                            'total_value_ex_vat' => $itemData['total_value_ex_vat'],
+                        ]);
+                    }
+                }
+
+                // Update the total value of the purchase order
+                $purchaseOrder->updateTotalValue();
+            }
         }
 
         $purchaseOrder->load(['supplier', 'distributor', 'createdBy', 'items.product']);
@@ -207,27 +275,6 @@ class PurchaseOrderController extends Controller
         return response()->json([
             'message' => 'Purchase order updated successfully',
             'purchase_order' => $purchaseOrder
-        ]);
-    }
-
-    /**
-     * Update line item delivery details
-     * Only Field Sales Associates and System Admins
-     */
-    public function updateLineItem(Request $request, PurchaseOrderItem $item)
-    {
-        $validated = $request->validate([
-            'delivered_quantity_kg' => 'nullable|numeric|min:0',
-            'actual_delivery_date' => 'nullable|date',
-            'quality_status' => ['nullable', Rule::in(['pending', 'accepted', 'rejected'])],
-            'quality_notes' => 'nullable|string',
-        ]);
-
-        $item->update($validated);
-
-        return response()->json([
-            'message' => 'Line item updated successfully',
-            'item' => $item->load('product')
         ]);
     }
 
