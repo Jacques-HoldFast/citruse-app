@@ -35,6 +35,17 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
+                <!-- Debug Section (remove after testing) -->
+                <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 class="font-medium text-yellow-800 mb-2">🐛 Debug Info (remove after testing)</h4>
+                    <div class="text-sm text-yellow-700 space-y-1">
+                        <div><strong>Page Props:</strong> {{ JSON.stringify(page.props, null, 2) }}</div>
+                        <div><strong>User Data:</strong> {{ JSON.stringify(userData, null, 2) }}</div>
+                        <div><strong>Computed User:</strong> {{ JSON.stringify(user, null, 2) }}</div>
+                        <div><strong>Can Create PO:</strong> {{ canCreatePO }}</div>
+                    </div>
+                </div>
+                
                 <!-- Search and Filters -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6">
@@ -372,12 +383,55 @@ const selectedOrder = ref(null)
 const newStatus = ref('')
 const statusUpdating = ref(false)
 
-// User permissions
-const user = computed(() => page.props.auth?.user || {})
-const canCreatePO = computed(() => 
-    user.value.role === 'system_administrator' || 
-    user.value.role === 'purchasing_manager'
-)
+// User data - use API like Dashboard
+const userData = ref(null)
+
+// Debug: Let's see what we're getting
+console.log('=== PURCHASE ORDER INDEX DEBUG ===')
+console.log('Page props:', page.props)
+console.log('Page props auth:', page.props.auth)
+console.log('Page props user:', page.props.user)
+
+// User permissions - use API data like Dashboard
+const user = computed(() => {
+    // Debug logging
+    console.log('Computing user, userData.value:', userData.value)
+    
+    // First try API data (your working method)
+    if (userData.value?.user) {
+        console.log('Using API user data:', userData.value.user)
+        return userData.value.user
+    }
+    
+    // Fallback to page props
+    if (page.props.auth?.user) {
+        console.log('Using page props auth user:', page.props.auth.user)
+        return page.props.auth.user
+    }
+    
+    if (page.props.user?.user) {
+        console.log('Using page props nested user:', page.props.user.user)
+        return page.props.user.user
+    }
+    
+    console.log('No user data found, returning empty object')
+    return {}
+})
+
+const canCreatePO = computed(() => {
+    const canCreate = user.value?.permissions?.can_create_purchase_orders || 
+                     user.value.role === 'system_administrator' || 
+                     user.value.role === 'purchasing_manager'
+    
+    console.log('canCreatePO check:', {
+        user: user.value,
+        permissions: user.value?.permissions,
+        role: user.value?.role,
+        canCreate
+    })
+    
+    return canCreate
+})
 
 // Computed properties
 const filteredPurchaseOrders = computed(() => {
@@ -435,6 +489,18 @@ const loadPurchaseOrders = async () => {
     } catch (err) {
         console.error('Error loading purchase orders:', err)
         purchaseOrders.value = []
+    }
+}
+
+// Load user data like Dashboard
+const loadUserData = async () => {
+    try {
+        console.log('Loading user data via API...')
+        const response = await api.getUser()
+        userData.value = response
+        console.log('Loaded user data:', userData.value)
+    } catch (err) {
+        console.error('Error loading user data:', err)
     }
 }
 
@@ -568,6 +634,8 @@ const updateStatus = async () => {
 
 // Load data on mount
 onMounted(() => {
+    console.log('Purchase Order Index mounted')
+    loadUserData()
     loadPurchaseOrders()
 })
 </script>
