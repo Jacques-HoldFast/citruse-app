@@ -315,7 +315,7 @@
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-green-600">
-                                R{{ formatCurrency(totalValue) }}
+                                R{{ formatCurrency(totalValue) }} 
                             </div>
                             <div class="text-sm text-gray-500">Total Value</div>
                         </div>
@@ -468,9 +468,12 @@ const posCount = computed(() =>
     filteredPurchaseOrders.value.filter(o => o.type === 'supplier_order').length
 )
 
-const totalValue = computed(() => 
-    filteredPurchaseOrders.value.reduce((sum, order) => sum + (order.total_value_ex_vat || 0), 0)
-)
+const totalValue = computed(() =>
+  filteredPurchaseOrders.value.reduce((sum, order) => {
+    const orderValue = parseFloat(order.total_value_ex_vat || 0);
+    return sum + orderValue;
+  }, 0)
+);
 
 // Methods
 const loadPurchaseOrders = async () => {
@@ -548,6 +551,7 @@ const formatStatus = (status) => {
 }
 
 const formatCurrency = (value) => {
+    console.log('Formatting currency value:', value);
     return new Intl.NumberFormat('en-ZA', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
