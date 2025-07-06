@@ -284,7 +284,7 @@ class PurchaseOrderController extends Controller
      */
     public function pipelineForecast(Request $request)
     {
-        $months = $request->input('months', 6);
+        $months = (int) $request->input('months', 6);
 
         $distributorOrders = PurchaseOrder::distributorOrders()
             ->with(['distributor', 'items.product'])

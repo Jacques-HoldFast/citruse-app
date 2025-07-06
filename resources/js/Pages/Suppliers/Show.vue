@@ -206,7 +206,7 @@ const props = defineProps({
 const { loading, error, api } = useApi()
 const supplier = ref(null)
 
-const loadSupplier = async () => {
+const loadSupplier = async () => { 
     try {
         const response = await api.getSupplier(props.supplierId)
         supplier.value = response.supplier || response
